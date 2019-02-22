@@ -5,12 +5,12 @@ import random
 # Class Zone represents a zone.
 class Zone:
     def __init__ (self): # constructor
-        self.owner = 0
-        self.mp = 0
-        self.ep = 0
-        self.vis = 0
-        self.plt = 0
-        self.visited = 0
+        self.owner = 0 # ID of the zone's owner
+        self.mp = 0 # number of player's pod
+        self.ep = 0 # number of enemy pod
+        self.vis = 0 # visibility of the zone
+        self.plt = 0 # number of platinum sources
+        self.visited = 0 # higher value means the zone has been visited recently
     def upd(self, o, p0, p1, v, p, my_id): # update value
         self.owner = o
         self.vis = v
@@ -23,8 +23,8 @@ class Zone:
             self.ep = p0
         if self.visit > 0:
             self.visited -= 1
-    def visit(self):
-        self.visited = random.randrange(2, 6)
+    def visit(self): # mark zone as visited
+        self.visited = random.randrange(3, 6)
         
 def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
     # favored zones and how much they are favored
