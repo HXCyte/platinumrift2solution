@@ -11,4 +11,6 @@ Solution for  https://www.codingame.com/ide/puzzle/platinum-rift-episode-2
 - If pods have visited a zone recently, they won't return to that zone for 3-5 turns.
 - Criterias listed above have their own weight in the calculation, so some conditions are more favorabl than the other.
   For example, zones with five platinum sources are mor favorable than zones with only one source.
+- If one zone contains more than 20 pods, there will be a chance that the pods split into twwo teams and
+  act independently.
   
