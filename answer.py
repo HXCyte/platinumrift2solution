@@ -5,12 +5,12 @@ import random
 # Class Zone represents a zone.
 class Zone:
     def __init__ (self): # constructor
-        self.owner = 0 # ID of the zone's owner
-        self.mp = 0 # number of player's pod
-        self.ep = 0 # number of enemy pod
-        self.vis = 0 # visibility of the zone
-        self.plt = 0 # number of platinum sources
-        self.visited = 0 # higher value means the zone has been visited recently
+        self.owner = 0
+        self.mp = 0
+        self.ep = 0
+        self.vis = 0
+        self.plt = 0
+        self.visited = 0
     def upd(self, o, p0, p1, v, p, my_id): # update value
         self.owner = o
         self.vis = v
@@ -23,10 +23,15 @@ class Zone:
             self.ep = p0
         if self.visit > 0:
             self.visited -= 1
-    def visit(self): # mark zone as visited
+    def visit(self):
         self.visited = random.randrange(3, 6)
         
-def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
+def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor, pod_count): # strategy
+    # tenth of the population will be left behind to guard the base.
+    if z_id == my_base:
+        my_pods -= pod_count // 10
+        if my_pods < 0:
+            my_pods = 0
     # favored zones and how much they are favored
     mfavored_zone1 = -1 
     mfavored_zone2 = -1
@@ -62,6 +67,9 @@ def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
         # pods do not feel like going to recently visited zones
         if nz.visited > 0:
             favor_value -= nz.visited * 5
+        # if they're ready and the enemy base is in sight, the pods will attack it!
+        if z_id == enemy_base:
+            favor_value += int(eff_pods - 1.5 * nz.ep) * 100
         # checks if this zone is the most favored one
         if favor_value > mfavor_value1:
             mfavor_value2 = mfavor_value1
@@ -101,6 +109,10 @@ player_count, my_id, zone_count, link_count = [int(i) for i in raw_input().split
 enemy_id = 1 - my_id
 zones = []
 neighborZones = []
+my_base = -1
+enemy_base = -1
+first_run = True
+pod_count = 0
 for i in xrange(zone_count):
     # zone_id: this zone's ID (between 0 and zoneCount-1)
     # platinum_source: Because of the fog, will always be 0
@@ -115,18 +127,27 @@ for i in xrange(link_count):
 # game loop
 while True:
     comm = ""
+    pod_count = 0
     my_platinum = int(raw_input())  # your available Platinum
     # get zones data
     for i in xrange(zone_count):
         z_id, owner_id, pods_p0, pods_p1, visible, platinum = [int(j) for j in raw_input().split()]
         zones[z_id].upd(owner_id, pods_p0, pods_p1, visible, platinum, my_id)
+        pod_count += zones[z_id].mp
+        if first_run:
+            if zones[z_id].mp > 0:
+                my_base = z_id
+            elif zones[z_id].ep > 0:
+                enemy_base = z_id
+    if first_run:
+        first_run = False
     # move pods in every zone
     for i in xrange(zone_count):
         my_zone = zones[i]      # get zone
         my_pods = my_zone.mp
         enemy_pods = my_zone.ep
         if my_pods > 0:
-            comm += strategy(my_id, enemy_id, my_pods, enemy_pods, i, neighborZones[i]) # apply strategy
+            comm += strategy(my_id, enemy_id, my_pods, enemy_pods, i, neighborZones[i], pod_count) # apply strategy
 
     print (comm)
     print "WAIT"
