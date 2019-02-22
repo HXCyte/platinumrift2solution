@@ -6,20 +6,82 @@ import random
 class Zone:
     def __init__ (self): # constructor
         self.owner = 0
-        self.p0 = 0
-        self.p1 = 0
+        self.mp = 0
+        self.ep = 0
         self.vis = 0
         self.plt = 0
-    def upd(self, o, p1, p2, v, p): # update value
+    def upd(self, o, p0, p1, v, p, my_id): # update value
         self.owner = o
-        self.p0 = p1
-        self.p1 = p2
         self.vis = v
         self.plt = p
+        if my_id == 0:
+            self.mp = p0
+            self.ep = p1
+        else:
+            self.mp = p1
+            self.ep = p0
 
-def strategy(my_pods, enemy_pods, z_id, neighbor): # strategy
-    return 0
-
+        
+def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
+    # favored zones and how much they are favored
+    mfavored_zone1 = -1 
+    mfavored_zone2 = -1
+    mfavor_value1 = -1000
+    mfavor_value2 = -1000
+    # eff_pods: pods to move
+    # pod_split: if true, pods in the zone splits in 
+    # two teams and go to two different zones
+    eff_pods = my_pods
+    pod_split = False
+    comm = ""
+    # pods have a chance to split if there are more than 20 of them
+    if my_pods > 20 and len(neighbor) > 1 and random.randrange(100) > 90:
+        pod_split = True
+        eff_pods = my_pods // 2
+    # check if the neighboring zones are favored
+    for z in neighbor:
+        nz = zones[z]
+        favor_value = 0
+        # pods will most likely go to neutral/enemy zones with platinums
+        if nz.plt > 0 and nz.owner != my_id:
+            favor_value += nz.plt * 10
+        # pods prefer to capture neutral/enemy zones
+        if nz.owner == enemy_id:
+            favor_value += 20
+        if nz.owner == -1:
+            favor_value += 10
+        #if nz.mp > 0:
+            #favor_value += 5
+        # pods will confront enemy pods if they outnumber the enemy pods
+        if nz.ep > 0:
+            favor_value += (eff_pods - nz.ep) * 2
+        
+        # checks if this zone is the most favored one
+        if favor_value > mfavor_value1:
+            mfavor_value2 = mfavor_value1
+            mfavor_value1 = favor_value
+            mfavored_zone2 = mfavored_zone1
+            mfavored_zone1 = z
+        elif favor_value == mfavor_value1 and random.randrange(100) > 50:
+            mfavor_value2 = mfavor_value1
+            mfavor_value1 = favor_value
+            mfavored_zone2 = mfavored_zone1
+            mfavored_zone1 = z
+    
+    # output
+    if pod_split:
+        comm += str(eff_pods) + " "
+        comm += str(z_id) + " "
+        comm += str(mfavored_zone1) + " "
+        comm += str(my_pods - eff_pods) + " "
+        comm += str(z_id) + " "
+        comm += str(mfavored_zone2) + " "
+    elif my_pods > 0:
+        comm += str(my_pods) + " "
+        comm += str(z_id) + " "
+        comm += str(mfavored_zone1) + " "
+    return comm
+        
 # player_count: the amount of players (always 2)
 # my_id: my player ID (0 or 1)
 # zone_count: the amount of zones on the map
@@ -27,6 +89,7 @@ def strategy(my_pods, enemy_pods, z_id, neighbor): # strategy
 # zones: contains all information for zones
 # neighborZones : ID of neighboring zones
 player_count, my_id, zone_count, link_count = [int(i) for i in raw_input().split()]
+enemy_id = 1 - my_id
 zones = []
 neighborZones = []
 for i in xrange(zone_count):
@@ -44,21 +107,17 @@ for i in xrange(link_count):
 while True:
     comm = ""
     my_platinum = int(raw_input())  # your available Platinum
+    # get zones data
     for i in xrange(zone_count):
         z_id, owner_id, pods_p0, pods_p1, visible, platinum = [int(j) for j in raw_input().split()]
-        zones[z_id].upd(owner_id, pods_p0, pods_p1, visible, platinum)
-        
+        zones[z_id].upd(owner_id, pods_p0, pods_p1, visible, platinum, my_id)
+    # move pods in every zone
     for i in xrange(zone_count):
         my_zone = zones[i]      # get zone
-        if my_id == 0:          # owned pod in the zone
-            my_pods = my_zone.p0
-        else:
-            my_pods = my_zone.p1
+        my_pods = my_zone.mp
+        enemy_pods = my_zone.ep
         if my_pods > 0:
-            # execute command(s)
-            comm += str(my_pods) + " "
-            comm += str(i) + " "
-            comm += str(neighborZones[i][random.randrange(len(neighborZones[i]))]) + " "
+            comm += strategy(my_id, enemy_id, my_pods, enemy_pods, i, neighborZones[i]) # apply strategy
 
     print (comm)
     print "WAIT"
