@@ -9,10 +9,13 @@ Solution for  https://www.codingame.com/ide/puzzle/platinum-rift-episode-2
 - If the pods encounter enemy pods in an adjacent zones, they will chase if they outnumber the enemies and
   run away if they are outnumbered.
 - If pods have visited a zone recently, they won't return to that zone for 3-5 turns.
-- Criterias listed above have their own weight in the calculation, so some conditions are more favorabl than the other.
+- If pods find out the enemy base and are prepared, they will attack it!
+- Criterias listed above have their own weight in the calculation, so some conditions are more favorable than the other.
   For example, zones with five platinum sources are mor favorable than zones with only one source.
-- If one zone contains more than 20 pods, there will be a chance that the pods split into twwo teams and
+- If one zone contains more than 20 pods, there will be a chance that the pods split into two teams and
   act independently.
+- Just to be safe, a good amount of pods will be kept in base as guards.
+  
   
 
 16518230-16518331-19918165-16718288
