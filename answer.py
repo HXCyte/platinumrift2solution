@@ -10,6 +10,7 @@ class Zone:
         self.ep = 0
         self.vis = 0
         self.plt = 0
+        self.visited = 0
     def upd(self, o, p0, p1, v, p, my_id): # update value
         self.owner = o
         self.vis = v
@@ -20,7 +21,10 @@ class Zone:
         else:
             self.mp = p1
             self.ep = p0
-
+        if self.visit > 0:
+            self.visited -= 1
+    def visit(self):
+        self.visited = random.randrange(2, 6)
         
 def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
     # favored zones and how much they are favored
@@ -55,7 +59,9 @@ def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
         # pods will confront enemy pods if they outnumber the enemy pods
         if nz.ep > 0:
             favor_value += (eff_pods - nz.ep) * 2
-        
+        # pods do not feel like going to recently visited zones
+        if nz.visited > 0:
+            favor_value -= nz.visited * 5
         # checks if this zone is the most favored one
         if favor_value > mfavor_value1:
             mfavor_value2 = mfavor_value1
@@ -73,13 +79,16 @@ def strategy(my_id, enemy_id, my_pods, enemy_pods, z_id, neighbor): # strategy
         comm += str(eff_pods) + " "
         comm += str(z_id) + " "
         comm += str(mfavored_zone1) + " "
+        zones[mfavored_zone1].visit()
         comm += str(my_pods - eff_pods) + " "
         comm += str(z_id) + " "
         comm += str(mfavored_zone2) + " "
+        zones[mfavored_zone2].visit()
     elif my_pods > 0:
         comm += str(my_pods) + " "
         comm += str(z_id) + " "
         comm += str(mfavored_zone1) + " "
+        zones[mfavored_zone1].visit()
     return comm
         
 # player_count: the amount of players (always 2)
