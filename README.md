@@ -14,3 +14,5 @@ Solution for  https://www.codingame.com/ide/puzzle/platinum-rift-episode-2
 - If one zone contains more than 20 pods, there will be a chance that the pods split into twwo teams and
   act independently.
   
+
+16518230-16518331-19918165-16718288
